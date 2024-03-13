@@ -15,7 +15,7 @@ tags_list = ["proto", "in_if", "out_if", "sampler_address"]
 fields_list = ["sampler_address", "sequence_num", "src_addr", "dst_addr", "src_port", "dst_port", "bytes", "packets"]
 
 try:
-    db_client = InfluxDBClient("155.158.213.72", 8086, "nfc", "nfctest123", "netflowDB")
+    db_client = InfluxDBClient("changeMe", 8086, "changeMe", "changeMe", "changeMe")
     while True:
         if p.poll():
             tags = {}
