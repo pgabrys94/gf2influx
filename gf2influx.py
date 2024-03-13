@@ -12,7 +12,7 @@ p = select.poll()
 p.register(f.stdout)
 
 tags_list = ["proto", "in_if", "out_if", "sampler_address"]
-fields_list = ["sampler_address", "sequence_num", "src_addr", "dst_addr", "src_port", "dst_port", "bytes", "packets"]
+fields_list = ["sequence_num", "src_addr", "dst_addr", "src_port", "dst_port", "bytes", "packets"]
 
 try:
     db_client = InfluxDBClient("changeMe", 8086, "changeMe", "changeMe", "changeMe")
