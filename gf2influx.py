@@ -4,7 +4,7 @@ import select
 import json
 from influxdb import InfluxDBClient
 
-temp_file = os.path.normpath("/tmp/gf2influx.tmp")
+temp_file = os.path.normpath("/var/log/gf2influx.log")
 args = ['tail', '-fn0', temp_file]
 
 f = subprocess.Popen(args, stdout=subprocess.PIPE)
