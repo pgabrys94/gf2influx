@@ -21,7 +21,7 @@ try:
                 tags = {}
                 fields = {}
 
-                line = json.loads(f.stdout.readline().decode())
+                line = json.loads(f.stdout.readline())
 
                 flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
                 fields["flow_time"] = flow_time
