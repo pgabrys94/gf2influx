@@ -18,11 +18,13 @@ pwd = ""
 try:
     if os.path.exists(config_file):
         config.load()
-        if config()["password"][0] != "<" and config()["password"][-1] != ">":
+        pwd = config()["password"]
+        if pwd[0] != "<" and pwd[-1] != ">":
             config.veil("password")
-            config.load()
-            config()["password"] = "<" + config()["password"] + ">"
+            config.create("password", "<" + config()["password"] + ">")
             config.save()
+            pwd_crypted = config()["password"][1:-1]
+            pwd = config.unveil(pwd_crypted)
         else:
             pwd_crypted = config()["password"][1:-1]
             pwd = config.unveil(pwd_crypted)
