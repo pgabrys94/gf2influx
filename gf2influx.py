@@ -14,6 +14,8 @@ fields_list = ["sequence_num", "bytes", "packets"]
 config = Conson(salt="geoip2grafana")
 config_file = os.path.join(os.getcwd(), "config.json")
 pwd = ""
+batch = []
+counter = 0
 
 try:
     if os.path.exists(config_file):
@@ -65,16 +67,20 @@ try:
                         elif key in fields_list:
                             fields[key] = value
 
-                    formatted = [
-                        {
-                            "measurement": line["type"],
-                            "tags": tags,
-                            "fields": fields,
-                            "timestamp": line["time_received_ns"]
-                        }
-                    ]
+                    formatted = {
+                        "measurement": line["type"],
+                        "tags": tags,
+                        "fields": fields,
+                        "timestamp": line["time_received_ns"]
+                    }
 
-                    db_client.write_points(formatted)
+                    batch.append(formatted)
+                    counter += 1
+
+            if counter == 1000:
+                db_client.write_points(batch)
+                batch = []
+                counter = 0
 
 except Exception as err:
     print(err)
