@@ -20,6 +20,7 @@ try:
         config.load()
         if config()["password"][0] != "<" and config()["password"][-1] != ">":
             config.veil("password")
+            config.load()
             config()["password"] = "<" + config()["password"] + ">"
             config.save()
         else:
