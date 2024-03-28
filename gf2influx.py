@@ -22,12 +22,10 @@ try:
             config.veil("password")
             config()["password"] = "<" + config()["password"] + ">"
             config.save()
-            config.load()
-            pwd_crypted = config()["password"][1:-1]
-            pwd = config.unveil(pwd_crypted)
         else:
             pwd_crypted = config()["password"][1:-1]
             pwd = config.unveil(pwd_crypted)
+
     else:
         config.create("host", "localhost")
         config.create("port", 8086)
