@@ -48,7 +48,7 @@ try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
     while True:
         if os.path.exists(temp_file):
-            with subprocess.Popen(args, stdout=subprocess.PIPE, bufsize=1, universal_newlines=True) as f:
+            with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
                 p = select.poll()
                 p.register(f.stdout)
 
@@ -56,7 +56,7 @@ try:
                     tags = {}
                     fields = {}
 
-                    line = json.loads(f.stdout.readline())
+                    line = json.loads(f.stdout.readline().decode())
 
                     flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
                     fields["flow_time"] = flow_time
@@ -77,7 +77,7 @@ try:
                     batch.append(formatted)
                     counter += 1
 
-            if counter == 1000:
+            if counter == 100:
                 db_client.write_points(batch)
                 batch = []
                 counter = 0
