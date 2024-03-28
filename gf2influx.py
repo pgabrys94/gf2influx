@@ -83,4 +83,6 @@ try:
                 counter = 0
 
 except Exception as err:
+    print(line)
+    print(formatted)
     print(err)
