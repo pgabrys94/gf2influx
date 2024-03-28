@@ -4,7 +4,7 @@ import select
 import json
 from influxdb import InfluxDBClient
 
-temp_file = os.path.normpath("/var/log/gf2influx.log")
+temp_file = os.path.normpath("/var/log/netflow.log")
 args = ['tail', '-fn0', temp_file]
 
 tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
