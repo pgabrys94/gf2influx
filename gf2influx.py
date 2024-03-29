@@ -2,7 +2,6 @@ import os
 import subprocess
 import select
 import json
-from datetime import datetime
 from conson import Conson
 import sys
 import threading
@@ -43,7 +42,7 @@ def poller():
                     formatted = {
                         "measurement": line["type"],
                         "tags": tags,
-                        "time": int(line["time_received_ns"]),
+                        "timestamp": int(line["time_received_ns"]),
                         "fields": fields
                     }
 
