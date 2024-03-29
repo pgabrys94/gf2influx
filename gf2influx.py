@@ -2,6 +2,7 @@ import os
 import subprocess
 import select
 import json
+from datetime import datetime
 from conson import Conson
 import sys
 import threading
@@ -41,12 +42,14 @@ def poller():
 
                     timestamp_seconds = int(line["time_received_ns"]) // 10 ** 9
                     timestamp_nanos_remainder = int(line["time_received_ns"]) % 10 ** 9
+                    timestamp_rfc3339 = datetime.utcfromtimestamp(timestamp_seconds).strftime(
+                        '%Y-%m-%dT%H:%M:%S') + '.' + str(timestamp_nanos_remainder).zfill(9) + 'Z'
 
                     formatted = {
                         "measurement": line["type"],
                         "tags": tags,
+                        "time": timestamp_rfc3339
                         "fields": fields,
-                        "time": f"{timestamp_seconds}.{timestamp_nanos_remainder}Z"
                     }
 
                     batch.append(formatted)
