@@ -39,11 +39,14 @@ def poller():
                         elif key in fields_list:
                             fields[key] = value
 
+                    timestamp_seconds = int(line["time_received_ns"]) // 10 ** 9
+                    timestamp_nanos_remainder = int(line["time_received_ns"]) % 10 ** 9
+
                     formatted = {
                         "measurement": line["type"],
                         "tags": tags,
                         "fields": fields,
-                        "timestamp": int(line["time_received_ns"])
+                        "time": f"{timestamp_seconds}.{timestamp_nanos_remainder}Z"
                     }
 
                     batch.append(formatted)
