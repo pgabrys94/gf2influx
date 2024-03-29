@@ -48,8 +48,8 @@ def poller():
                     formatted = {
                         "measurement": line["type"],
                         "tags": tags,
-                        "time": timestamp_rfc3339
-                        "fields": fields,
+                        "time": timestamp_rfc3339,
+                        "fields": fields
                     }
 
                     batch.append(formatted)
