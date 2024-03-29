@@ -12,7 +12,7 @@ def send_to_influxdb(data):
     try:
         db_client.write_points(data)
     except Exception as error:
-        print("InfluxDB write error: ", error)
+        print("InfluxDB write error: ", type(error) + ": " + error)
 
 
 def poller():
@@ -89,11 +89,11 @@ try:
         input("Press any key to continue...")
         sys.exit()
 except Exception as err:
-    print("Configuration failed: ")
+    print("Configuration failed: ", type(err) + ": " + err)
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
     threading.Thread(target=poller).start()
 
 except Exception as err:
-    print(err)
+    print(type(err) + ": " + err)
