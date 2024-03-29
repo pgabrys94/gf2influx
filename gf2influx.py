@@ -92,11 +92,11 @@ try:
         input("Press any key to continue...")
         sys.exit()
 except Exception as err:
-    print("Configuration failed: ", type(err) + ": " + err)
+    print("Configuration failed: ", str(type(err)) + ": " + str(err))
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
     threading.Thread(target=poller).start()
 
 except Exception as err:
-    print(type(err) + ": " + err)
+    print(str(type(err)) + ": " + str(err))
