@@ -35,7 +35,7 @@ def poller():
 
                     for key, value in line.items():
                         if key in tags_list:
-                            tags[key] = value
+                            tags[key] = str(value)
                         elif key in fields_list:
                             fields[key] = value
 
@@ -43,7 +43,7 @@ def poller():
                         "measurement": line["type"],
                         "tags": tags,
                         "fields": fields,
-                        "timestamp": line["time_received_ns"]
+                        "timestamp": int(line["time_received_ns"])
                     }
 
                     batch.append(formatted)
