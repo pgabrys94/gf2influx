@@ -12,51 +12,47 @@ def send_to_influxdb(data):
     try:
         db_client.write_points(data)
     except Exception as error:
-        print("InfluxDB write error: ", error)
+        print("InfluxDB write error: ", type(error) + ": " + error)
 
 
 def poller():
-    try:
-        batch = []
-        counter = 0
-        while True:
-            if os.path.exists(temp_file):
-                with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
-                    p = select.poll()
-                    p.register(f.stdout)
+    batch = []
+    counter = 0
+    while True:
+        if os.path.exists(temp_file):
+            with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
+                p = select.poll()
+                p.register(f.stdout)
 
-                    if p.poll():
-                        tags = {}
-                        fields = {}
+                if p.poll():
+                    tags = {}
+                    fields = {}
 
-                        line = json.loads(f.stdout.readline().decode())
+                    line = json.loads(f.stdout.readline().decode())
 
-                        flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
-                        fields["flow_time"] = flow_time
+                    flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
+                    fields["flow_time"] = flow_time
 
-                        for key, value in line.items():
-                            if key in tags_list:
-                                tags[key] = value
-                            elif key in fields_list:
-                                fields[key] = value
+                    for key, value in line.items():
+                        if key in tags_list:
+                            tags[key] = str(value)
+                        elif key in fields_list:
+                            fields[key] = value
 
-                        formatted = {
-                            "measurement": line["type"],
-                            "tags": tags,
-                            "fields": fields,
-                            "timestamp": line["time_received_ns"]
-                        }
+                    formatted = {
+                        "measurement": line["type"],
+                        "tags": tags,
+                        "timestamp": int(line["time_received_ns"]),
+                        "fields": fields
+                    }
 
-                        batch.append(formatted)
-                        counter += 1
+                    batch.append(formatted)
+                    counter += 1
 
-                if counter == 50:
-                    threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
-                    batch.clear()
-                    counter = 0
-    except Exception as error:
-        print("ERROR: ", error)
-        print("LINE: ", line)
+            if counter == 50:
+                threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
+                batch.clear()
+                counter = 0
 
 
 temp_file = os.path.normpath("/var/log/netflow.log")
@@ -93,11 +89,11 @@ try:
         input("Press any key to continue...")
         sys.exit()
 except Exception as err:
-    print("Configuration failed: ")
+    print("Configuration failed: ", str(type(err)) + ": " + str(err))
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
     threading.Thread(target=poller).start()
 
 except Exception as err:
-    print(err)
+    print(str(type(err)) + ": " + str(err))
