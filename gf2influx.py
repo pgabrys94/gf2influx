@@ -93,8 +93,7 @@ try:
                         batch.append(formatted)
 
                 now = datetime.now()
-                print("SECONDS: ", now - previous_time)
-                if now - previous_time > timedelta(seconds=5):
+                if now - previous_time > timedelta(seconds=1):
                     threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
                     batch.clear()
                     previous_time = now
