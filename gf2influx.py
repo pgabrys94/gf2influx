@@ -29,7 +29,13 @@ def poller():
                         tags = {}
                         fields = {}
 
-                        line = json.loads(f.stdout.readline().decode())
+                        raw_line_b = f.stdout.readline()
+                        try:
+                            raw_line = raw_line_b.decode()
+                            line = json.loads(raw_line)
+                        except Exception as e:
+                            print(e)
+                            line = json.loads(raw_line_b)
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
                         fields["flow_time"] = flow_time
