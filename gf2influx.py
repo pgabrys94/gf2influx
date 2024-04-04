@@ -14,60 +14,6 @@ def send_to_influxdb(data):
     except Exception as error:
         print("InfluxDB write error: ", str(type(error)) + ": " + str(error))
 
-
-def poller():
-    batch = []
-    counter = 0
-    while True:
-        try:
-            if os.path.exists(temp_file):
-                with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
-                    p = select.poll()
-                    p.register(f.stdout)
-
-                    if p.poll():
-                        tags = {}
-                        fields = {}
-
-                        raw_line_b = f.stdout.readline()
-                        print(isinstance(raw_line, dict))
-                        try:
-                            raw_line = raw_line_b.decode()
-                            line = json.loads(raw_line)
-                        except Exception as e:
-                            print("JSON parser error: ", e)
-                            print("For RAW line: ", raw_line)
-                            line = json.loads(raw_line_b)
-
-                        flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
-                        fields["flow_time"] = flow_time
-
-                        for key, value in line.items():
-                            if key in tags_list:
-                                tags[key] = str(value)
-                            elif key in fields_list:
-                                fields[key] = value
-
-                        formatted = {
-                            "measurement": line["type"],
-                            "tags": tags,
-                            "timestamp": int(line["time_received_ns"]),
-                            "fields": fields
-                        }
-
-                        batch.append(formatted)
-                        counter += 1
-
-                if counter == 50:
-                    threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
-                    batch.clear()
-                    counter = 0
-
-        except Exception as error:
-            print("ERROR: ", error)
-
-
-
 temp_file = os.path.normpath("/var/log/netflow.log")
 args = ['tail', '-fn0', temp_file]
 
@@ -106,7 +52,55 @@ except Exception as err:
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
-    threading.Thread(target=poller).start()
+    batch = []
+    counter = 0
+    while True:
+        try:
+            if os.path.exists(temp_file):
+                with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
+                    p = select.poll()
+                    p.register(f.stdout)
+
+                    if p.poll():
+                        tags = {}
+                        fields = {}
+
+                        raw_line_b = f.stdout.readline()
+                        print(isinstance(raw_line_b, dict))
+                        try:
+                            raw_line = raw_line_b.decode()
+                            line = json.loads(raw_line)
+                        except Exception as e:
+                            print("JSON parser error: ", e)
+                            print("For RAW line: ", raw_line)
+                            line = json.loads(raw_line_b)
+
+                        flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
+                        fields["flow_time"] = flow_time
+
+                        for key, value in line.items():
+                            if key in tags_list:
+                                tags[key] = str(value)
+                            elif key in fields_list:
+                                fields[key] = value
+
+                        formatted = {
+                            "measurement": line["type"],
+                            "tags": tags,
+                            "timestamp": int(line["time_received_ns"]),
+                            "fields": fields
+                        }
+
+                        batch.append(formatted)
+                        counter += 1
+
+                if counter == 50:
+                    threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
+                    batch.clear()
+                    counter = 0
+
+        except Exception as error:
+            print("ERROR: ", error)
 
 except Exception as err:
     print(str(type(err)) + ": " + str(err))
