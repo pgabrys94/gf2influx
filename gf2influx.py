@@ -66,7 +66,9 @@ try:
                         fields = {}
 
                         line = json.loads(f.stdout.readline().decode())
-                        print(type(line))
+                        compare = isinstance(line, dict)
+                        if not compare:
+                            print("Dictionary: ", compare)
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
                         fields["flow_time"] = flow_time
