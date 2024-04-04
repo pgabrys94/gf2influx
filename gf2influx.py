@@ -5,6 +5,7 @@ import json
 from conson import Conson
 import sys
 import threading
+from datetime import datetime, timedelta
 from influxdb import InfluxDBClient
 
 
@@ -14,6 +15,7 @@ def send_to_influxdb(data):
     except Exception as error:
         print("InfluxDB write error: ", str(type(error)) + ": " + str(error))
 
+
 temp_file = os.path.normpath("/var/log/netflow.log")
 args = ['tail', '-fn0', temp_file]
 
@@ -22,6 +24,8 @@ fields_list = ["sequence_num", "bytes", "packets"]
 config = Conson(salt="geoip2grafana")
 config_file = os.path.join(os.getcwd(), "config.json")
 pwd = ""
+previous_time = datetime.now()
+batch = []
 
 try:
     if os.path.exists(config_file):
@@ -52,8 +56,6 @@ except Exception as err:
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
-    batch = []
-    counter = 0
     while True:
         try:
             if os.path.exists(temp_file):
@@ -87,12 +89,11 @@ try:
                         }
 
                         batch.append(formatted)
-                        counter += 1
 
-                if counter == 50:
+                now = datetime.now()
+                if previous_time - now > timedelta(seconds=5):
                     threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
                     batch.clear()
-                    counter = 0
 
         except Exception as error:
             print("ERROR: ", error)
