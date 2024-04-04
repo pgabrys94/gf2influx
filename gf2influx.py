@@ -30,6 +30,7 @@ def poller():
                         fields = {}
 
                         raw_line_b = f.stdout.readline()
+                        print(isinstance(raw_line, dict))
                         try:
                             raw_line = raw_line_b.decode()
                             line = json.loads(raw_line)
