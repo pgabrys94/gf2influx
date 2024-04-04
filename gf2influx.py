@@ -68,7 +68,7 @@ try:
                         fields = {}
 
                         raw_line = f.stdout.readline()
-                        print(isinstance(raw_line.decode(), dict))
+                        print(type(raw_line.decode()))
                         if not isinstance(raw_line.decode(), dict):
                             continue
                         line = json.loads(raw_line)
