@@ -65,15 +65,8 @@ try:
                         tags = {}
                         fields = {}
 
-                        raw_line_b = f.stdout.readline()
-                        print(type(raw_line_b))
-                        try:
-                            raw_line = raw_line_b.decode()
-                            line = json.loads(raw_line)
-                        except Exception as e:
-                            print("JSON parser error: ", e)
-                            print("For RAW line: ", raw_line)
-                            line = json.loads(raw_line_b)
+                        line = json.loads(f.stdout.readline().decode())
+                        print(type(line))
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
                         fields["flow_time"] = flow_time
