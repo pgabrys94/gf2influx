@@ -65,8 +65,10 @@ try:
                         tags = {}
                         fields = {}
 
-                        line = json.loads(f.stdout.readline().decode())
-                        print(isinstance(line, dict))
+                        raw_line = f.stdout.readline()
+                        if not isinstance(raw_line.decode(), dict):
+                            continue
+                        line = json.loads(raw_line)
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
                         fields["flow_time"] = flow_time
