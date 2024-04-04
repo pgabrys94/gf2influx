@@ -34,7 +34,8 @@ def poller():
                             raw_line = raw_line_b.decode()
                             line = json.loads(raw_line)
                         except Exception as e:
-                            print(e)
+                            print("JSON parser error: ", e)
+                            print("For line: ", raw_line)
                             line = json.loads(raw_line_b)
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
@@ -57,13 +58,13 @@ def poller():
                         counter += 1
 
                 if counter == 50:
+                    print("#" * 100 + "\n", batch, "#" * 100 + "\n")
                     threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
                     batch.clear()
                     counter = 0
 
         except Exception as error:
             print("ERROR: ", error)
-            print("__LINE__: ", line)
 
 
 
