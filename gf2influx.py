@@ -91,9 +91,11 @@ try:
                         batch.append(formatted)
 
                 now = datetime.now()
+                print(previous_time - now)
                 if previous_time - now > timedelta(seconds=5):
                     threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
                     batch.clear()
+                    previous_time = now
 
         except Exception as error:
             print("ERROR: ", error)
