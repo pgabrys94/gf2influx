@@ -68,10 +68,11 @@ try:
                         fields = {}
 
                         raw_line = f.stdout.readline()
-                        print(type(raw_line.decode()))
-                        if not isinstance(raw_line.decode(), dict):
+                        try:
+                            line = json.loads(raw_line)
+                        except Exception as error:
+                            print(error)
                             continue
-                        line = json.loads(raw_line)
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
                         fields["flow_time"] = flow_time
