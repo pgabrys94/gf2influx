@@ -67,8 +67,14 @@ try:
                     if p.poll():
                         tags = {}
                         fields = {}
+                        raw_line = ""
 
-                        raw_line = f.stdout.readline()
+                        while "\n" not in raw_line:
+                            char = f.stdout.read(1).decode()
+                            if not char:
+                                break
+                            raw_line += char
+
                         try:
                             line = json.loads(raw_line)
                         except Exception as error:
