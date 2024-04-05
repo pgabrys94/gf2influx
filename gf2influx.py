@@ -105,10 +105,10 @@ try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
     lines = set()
     previous_time = datetime.now()
-    with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
-        p = select.poll()
-        p.register(f.stdout)
-        while True:
+    while True:
+        with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
+            p = select.poll()
+            p.register(f.stdout)
             if os.path.exists(temp_file):
 
                 if p.poll():
