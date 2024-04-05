@@ -86,7 +86,7 @@ try:
                         formatted = {
                             "measurement": line["type"],
                             "tags": tags,
-                            "timestamp": int(line["time_received_ns"]),
+                            "time": int(line["time_received_ns"]),
                             "fields": fields
                         }
 
@@ -94,7 +94,7 @@ try:
 
 
                 now = datetime.now()
-                if now - previous_time > timedelta(seconds=1):
+                if now - previous_time > timedelta(seconds=10):
                     threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
                     batch.clear()
                     previous_time = now
