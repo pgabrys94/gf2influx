@@ -18,7 +18,7 @@ def send_to_influxdb(data):
 
 
 temp_file = os.path.normpath("/var/log/netflow.log")
-args = ['tail', '-fn10', temp_file]
+args = ['tail', '-fn0', temp_file]
 
 tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
 fields_list = ["sequence_num", "bytes", "packets"]
@@ -27,7 +27,6 @@ config_file = os.path.join(os.getcwd(), "config.json")
 pwd = ""
 previous_time = datetime.now()
 batch = []
-previous_list = {}
 
 try:
     if os.path.exists(config_file):
@@ -70,46 +69,43 @@ try:
                         fields = {}
                         line = ""
 
-                        fresh_list = [line.decode().rstrip() for line in f.stdout.readlines() if line.decode().rstrip()
-                                      not in previous_list]
-                        for raw_line in fresh_list:
-                            if raw_line not in previous_list:
-                                try:
-                                    if raw_line.startswith("{") and raw_line.endswith("}\n"):
-                                        line = json.loads(raw_line)
-                                    else:
-                                        print("SKIPPED: ", raw_line)
-                                        continue
-                                except Exception as error:
-                                    column = 0
-                                    words = str(error).split()
-                                    if "column" in words:
-                                        column = int(words[words.index("column") + 1])
-                                    print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
-                                          ("<-" if column != 0 else ""))
-                                    print("LINE\n", line, "\n")
-                                    print("RAW_LINE\n", raw_line, "\n")
-                                    continue
+                        raw_line = f.stdout.readline()
 
-                                flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
-                                fields["flow_time"] = flow_time
+                        try:
+                            if raw_line.startswith(b"{") and raw_line.endswith(b"}\n"):
+                                line = json.loads(raw_line)
+                            else:
+                                print("SKIPPED: ", raw_line)
+                                continue
+                        except Exception as error:
+                            column = 0
+                            words = str(error).split()
+                            if "column" in words:
+                                column = int(words[words.index("column") + 1])
+                            print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
+                                  ("<-" if column != 0 else ""))
+                            print("LINE\n", line, "\n")
+                            print("RAW_LINE\n", raw_line, "\n")
+                            continue
 
-                                for key, value in line.items():
-                                    if key in tags_list:
-                                        tags[key] = str(value)
-                                    elif key in fields_list:
-                                        fields[key] = value
+                        flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
+                        fields["flow_time"] = flow_time
 
-                                formatted = {
-                                    "measurement": line["type"],
-                                    "tags": tags,
-                                    "time": int(line["time_received_ns"]),
-                                    "fields": fields
-                                }
+                        for key, value in line.items():
+                            if key in tags_list:
+                                tags[key] = str(value)
+                            elif key in fields_list:
+                                fields[key] = value
 
-                                batch.append(formatted)
+                        formatted = {
+                            "measurement": line["type"],
+                            "tags": tags,
+                            "time": int(line["time_received_ns"]),
+                            "fields": fields
+                        }
 
-                        previous_list = set(fresh_list)
+                        batch.append(formatted)
+                        time.sleep(0.01)
 
 
                 now = datetime.now()
