@@ -70,12 +70,12 @@ try:
                         fields = {}
                         line = ""
 
-                        fresh_list = [line.rstrip() for line in f.stdout.readlines() if line.rstrip()
+                        fresh_list = [line.decode().rstrip() for line in f.stdout.readlines() if line.decode().rstrip()
                                       not in previous_list]
                         for raw_line in fresh_list:
                             if raw_line not in previous_list:
                                 try:
-                                    if raw_line.startswith(b"{") and raw_line.endswith(b"}\n"):
+                                    if raw_line.startswith("{") and raw_line.endswith("}\n"):
                                         line = json.loads(raw_line)
                                     else:
                                         print("SKIPPED: ", raw_line)
