@@ -67,7 +67,6 @@ def digester(data):
         batch.clear()
 
 
-
 temp_file = os.path.normpath("/var/log/netflow.log")
 args = ['tail', '-fn0', temp_file]
 
