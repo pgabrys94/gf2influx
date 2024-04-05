@@ -27,6 +27,7 @@ config_file = os.path.join(os.getcwd(), "config.json")
 pwd = ""
 previous_time = datetime.now()
 batch = []
+previous_list = {}
 
 try:
     if os.path.exists(config_file):
@@ -69,43 +70,46 @@ try:
                         fields = {}
                         line = ""
 
-                        raw_line = f.stdout.readline()
+                        fresh_list = [line.rstrip() for line in f.stdout.readlines() if line.rstrip()
+                                      not in previous_list]
+                        for raw_line in fresh_list:
+                            if raw_line not in previous_list:
+                                try:
+                                    if raw_line.startswith(b"{") and raw_line.endswith(b"}\n"):
+                                        line = json.loads(raw_line)
+                                    else:
+                                        print("SKIPPED: ", raw_line)
+                                        continue
+                                except Exception as error:
+                                    column = 0
+                                    words = str(error).split()
+                                    if "column" in words:
+                                        column = int(words[words.index("column") + 1])
+                                    print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
+                                          ("<-" if column != 0 else ""))
+                                    print("LINE\n", line, "\n")
+                                    print("RAW_LINE\n", raw_line, "\n")
+                                    continue
 
-                        try:
-                            if raw_line.startswith(b"{") and raw_line.endswith(b"}\n"):
-                                line = json.loads(raw_line)
-                            else:
-                                print("SKIPPED: ", raw_line)
-                                continue
-                        except Exception as error:
-                            column = 0
-                            words = str(error).split()
-                            if "column" in words:
-                                column = int(words[words.index("column") + 1])
-                            print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
-                                  ("<-" if column != 0 else ""))
-                            print("LINE\n", line, "\n")
-                            print("RAW_LINE\n", raw_line, "\n")
-                            continue
+                                flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
+                                fields["flow_time"] = flow_time
 
-                        flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
-                        fields["flow_time"] = flow_time
+                                for key, value in line.items():
+                                    if key in tags_list:
+                                        tags[key] = str(value)
+                                    elif key in fields_list:
+                                        fields[key] = value
 
-                        for key, value in line.items():
-                            if key in tags_list:
-                                tags[key] = str(value)
-                            elif key in fields_list:
-                                fields[key] = value
+                                formatted = {
+                                    "measurement": line["type"],
+                                    "tags": tags,
+                                    "time": int(line["time_received_ns"]),
+                                    "fields": fields
+                                }
 
-                        formatted = {
-                            "measurement": line["type"],
-                            "tags": tags,
-                            "time": int(line["time_received_ns"]),
-                            "fields": fields
-                        }
+                                batch.append(formatted)
 
-                        batch.append(formatted)
-                        time.sleep(0.01)
+                        previous_list = set(fresh_list)
 
 
                 now = datetime.now()
