@@ -67,6 +67,7 @@ try:
                     if p.poll():
                         tags = {}
                         fields = {}
+                        line = ""
                         raw_line = ""
 
                         while "\n" not in raw_line:
