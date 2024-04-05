@@ -120,7 +120,7 @@ try:
                             threading.Thread(target=digester, args=(lines.copy(),)).start()
                             lines.clear()
                             previous_time = now
-                        else:
+                        elif len(lines) == 0:
                             break
 
 except Exception as err:
