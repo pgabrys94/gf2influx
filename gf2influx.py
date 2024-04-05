@@ -18,7 +18,7 @@ def send_to_influxdb(data):
 
 
 temp_file = os.path.normpath("/var/log/netflow.log")
-args = ['tail', '-fn0', temp_file]
+args = ['tail', '-fn10', temp_file]
 
 tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
 fields_list = ["sequence_num", "bytes", "packets"]
