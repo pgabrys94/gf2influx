@@ -94,7 +94,7 @@ try:
 
 
                 now = datetime.now()
-                if now - previous_time > timedelta(seconds=10):
+                if now - previous_time > timedelta(seconds=5):
                     threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
                     batch.clear()
                     previous_time = now
