@@ -68,16 +68,14 @@ try:
                         tags = {}
                         fields = {}
                         line = ""
-                        raw_line = ""
 
-                        while "\n" not in raw_line:
-                            char = f.stdout.read(1).decode()
-                            if not char:
-                                break
-                            raw_line += char
+                        raw_line = f.stdout.readline()
 
                         try:
-                            line = json.loads(raw_line)
+                            if raw_line.startswith(b"{") and raw_line.endswith(b"}"):
+                                line = json.loads(raw_line)
+                            else:
+                                continue
                         except Exception as error:
                             column = 0
                             words = str(error).split()
