@@ -72,7 +72,7 @@ try:
                         raw_line = f.stdout.readline()
 
                         try:
-                            if raw_line.startswith(b"{") and raw_line.endswith(b"}"):
+                            if raw_line.startswith(b"{") and raw_line.endswith(b"}\n"):
                                 line = json.loads(raw_line)
                             else:
                                 print("SKIPPED: ", raw_line)
