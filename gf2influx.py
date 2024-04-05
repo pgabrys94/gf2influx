@@ -21,7 +21,7 @@ def digester(data):
     fields_list = ["sequence_num", "bytes", "packets"]
     tags = {}
     fields = {}
-    batch = set()
+    batch = []
 
     i = len(data)
     for raw_line in data:
@@ -59,7 +59,7 @@ def digester(data):
             "fields": fields
         }
 
-        batch.add(formatted)
+        batch.append(formatted)
         i -= 1
 
     if i == 0:
