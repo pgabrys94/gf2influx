@@ -74,7 +74,7 @@ try:
                             column = 0
                             words = str(error).split()
                             if "column" in words:
-                                column = words[words.index("column") + 1]
+                                column = int(words[words.index("column") + 1])
                             print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
                                   ("<-" if column == 0 else ""))
                             continue
