@@ -5,6 +5,7 @@ import json
 from conson import Conson
 import sys
 import threading
+import time
 from datetime import datetime, timedelta
 from influxdb import InfluxDBClient
 
@@ -96,6 +97,7 @@ try:
                         }
 
                         batch.append(formatted)
+                        time.sleep(0.01)
 
 
                 now = datetime.now()
