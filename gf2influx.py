@@ -103,22 +103,25 @@ except Exception as err:
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
-    lines = set()
-    previous_time = datetime.now()
     while True:
+        lines = set()
+        previous_time = datetime.now()
         with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
             p = select.poll()
             p.register(f.stdout)
-            if os.path.exists(temp_file):
+            while True:
+                if os.path.exists(temp_file):
 
-                if p.poll():
-                    lines.add(f.stdout.readline())
+                    if p.poll():
+                        lines.add(f.stdout.readline())
 
-                    now = datetime.now()
-                    if datetime.now() - previous_time > timedelta(seconds=5) and len(lines) != 0:
-                        threading.Thread(target=digester, args=(lines.copy(),)).start()
-                        lines.clear()
-                        previous_time = now
+                        now = datetime.now()
+                        if datetime.now() - previous_time > timedelta(seconds=5) and len(lines) != 0:
+                            threading.Thread(target=digester, args=(lines.copy(),)).start()
+                            lines.clear()
+                            previous_time = now
+                        else:
+                            break
 
 except Exception as err:
     print(str(type(err)) + ": " + str(err))
