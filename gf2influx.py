@@ -76,7 +76,7 @@ try:
                             if "column" in words:
                                 column = int(words[words.index("column") + 1])
                             print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
-                                  ("<-" if column == 0 else ""))
+                                  ("<-" if column != 0 else ""))
                             continue
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
