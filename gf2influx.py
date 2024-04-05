@@ -84,7 +84,8 @@ try:
                                 column = int(words[words.index("column") + 1])
                             print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
                                   ("<-" if column != 0 else ""))
-                            print(raw_line, "\n")
+                            print("LINE\n", line, "\n")
+                            print("RAW_LINE\n", raw_line, "\n")
                             continue
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
