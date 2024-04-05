@@ -75,6 +75,7 @@ try:
                             if raw_line.startswith(b"{") and raw_line.endswith(b"}"):
                                 line = json.loads(raw_line)
                             else:
+                                print("SKIPPED: ", raw_line)
                                 continue
                         except Exception as error:
                             column = 0
