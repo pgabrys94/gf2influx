@@ -71,7 +71,12 @@ try:
                         try:
                             line = json.loads(raw_line)
                         except Exception as error:
-                            print(datetime.now().isoformat(), str(error) + ":", str(line)[:11] + "...")
+                            column = 0
+                            words = str(error).split()
+                            if "column" in words:
+                                column = words[words.index("column") + 1]
+                            print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
+                                  ("<-" if column == 0 else ""))
                             continue
 
                         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
