@@ -10,12 +10,21 @@ from datetime import datetime, timedelta
 from influxdb import InfluxDBClient
 
 
-def send_to_influxdb(data, client, logfile):
+def logger(error_data, f_name, *extra_data):
+    with open(log_file, "a") as log:
+        log_line = "{} | ERROR in {}: {}: {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), f_name,
+                                                     type(error_data), error_data)
+        if extra_data:
+            log_line += "\nADDITIONAL INFO:\n" + str(extra_data) + "\nADDITIONAL INFO END"
+        log.write(log_line)
+
+
+def send_to_influxdb(data):
     try:
         inserted = False
         i = 0
         while not inserted:
-            insertion = client.write_points(data)
+            insertion = db_client.write_points(data)
             inserted = insertion
             i += 1
             if not inserted and i < 6:
@@ -26,13 +35,10 @@ def send_to_influxdb(data, client, logfile):
 
 
     except Exception as error:
-        with open(logfile, "a") as log:
-            log_line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + " | InfluxDB write error: " +\
-                        str(type(error)) + ": " + str(error)
-            log.write(log_line)
+        logger(error, "send_to_influxdb")
 
 
-def digester(data, client, log_f):
+def digester(data):
     tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
     fields_list = ["sequence_num", "bytes", "packets"]
     tags = {}
@@ -53,10 +59,11 @@ def digester(data, client, log_f):
             words = str(error).split()
             if "column" in words:
                 column = int(words[words.index("column") + 1])
-            print(datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
-                  ("<-" if column != 0 else ""))
-            print("LINE\n", line, "\n")
-            print("RAW_LINE\n", raw_line, "\n")
+            additional = (datetime.now().isoformat(), str(error) + ":", str(line)[:column] +
+                          ("<-" if column != 0 else ""))
+            additional += "LINE\n", line, "\n"
+            additional += "RAW_LINE\n", raw_line, "\n"
+            logger(error, "send_to_influxdb", additional)
             continue
 
         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
@@ -79,7 +86,7 @@ def digester(data, client, log_f):
         i -= 1
 
     if i == 0:
-        threading.Thread(target=send_to_influxdb, args=(batch.copy(), client, log_f)).start()
+        threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
         batch.clear()
 
 
@@ -116,7 +123,7 @@ try:
         input("Press any key to continue...")
         sys.exit()
 except Exception as err:
-    print("Configuration failed: ", str(type(err)) + ": " + str(err))
+    logger(err, "main")
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
@@ -141,4 +148,4 @@ try:
                             break
 
 except Exception as err:
-    print(str(type(err)) + ": " + str(err))
+    logger(err, "main")
