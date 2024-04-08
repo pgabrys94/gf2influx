@@ -40,7 +40,7 @@ def send_to_influxdb(data, b_uid):
                 raise Exception("Timeout while sending data. Check database availability.")
             else:
                 send_end = time.time()
-                d_msg = "Batch {} inserted in {}s.".format(b_uid, len(data), send_end - send_start)
+                d_msg = "Batch {} inserted {} records in {}s.".format(b_uid, len(data), send_end - send_start)
                 logger("info", d_msg, "main")
 
     except Exception as error:
