@@ -141,7 +141,7 @@ try:
 
                         now = datetime.now()
                         if datetime.now() - previous_time > timedelta(seconds=5) and len(lines) != 0:
-                            threading.Thread(target=digester, args=(lines.copy(), db_client, log_file)).start()
+                            threading.Thread(target=digester, args=(lines.copy(),)).start()
                             lines.clear()
                             previous_time = now
                         elif len(lines) == 0:
