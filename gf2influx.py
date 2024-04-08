@@ -155,7 +155,7 @@ try:
 
                         now = datetime.now()
                         if (datetime.now() - previous_time > timedelta(seconds=5)
-                                and len(lines) != 0) or len(lines) >= 100:
+                                and len(lines) != 0) or len(lines) >= 150:
                             buid = batch_id
                             threading.Thread(target=digester, args=(lines.copy(), buid,)).start()
                             msg = "Batch of {} entries started processing".format(len(lines))
