@@ -5,18 +5,34 @@ import json
 from conson import Conson
 import sys
 import threading
+import time
 from datetime import datetime, timedelta
 from influxdb import InfluxDBClient
 
 
-def send_to_influxdb(data):
+def send_to_influxdb(data, client, logfile):
     try:
-        db_client.write_points(data)
+        inserted = False
+        i = 0
+        while not inserted:
+            insertion = client.write_points(data)
+            inserted = insertion
+            i += 1
+            if not inserted and i < 6:
+                time.sleep(3)
+                continue
+            elif not inserted and i >= 6:
+                raise Exception("Timeout while sending data. Check database availability.")
+
+
     except Exception as error:
-        print("InfluxDB write error: ", str(type(error)) + ": " + str(error))
+        with open(logfile, "a") as log:
+            log_line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + " | InfluxDB write error: " +\
+                        str(type(error)) + ": " + str(error)
+            log.write(log_line)
 
 
-def digester(data):
+def digester(data, client, log_f):
     tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
     fields_list = ["sequence_num", "bytes", "packets"]
     tags = {}
@@ -63,11 +79,12 @@ def digester(data):
         i -= 1
 
     if i == 0:
-        threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
+        threading.Thread(target=send_to_influxdb, args=(batch.copy(), client, log_f)).start()
         batch.clear()
 
 
 temp_file = os.path.normpath("/var/log/netflow.log")
+log_file = os.path.join("/var/log/", "gf2influx.log")
 args = ['tail', '-fn0', temp_file]
 
 config = Conson(salt="geoip2grafana")
@@ -117,7 +134,7 @@ try:
 
                         now = datetime.now()
                         if datetime.now() - previous_time > timedelta(seconds=5) and len(lines) != 0:
-                            threading.Thread(target=digester, args=(lines.copy(),)).start()
+                            threading.Thread(target=digester, args=(lines.copy(), db_client, log_file)).start()
                             lines.clear()
                             previous_time = now
                         elif len(lines) == 0:
