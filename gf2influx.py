@@ -17,7 +17,7 @@ def logger(e_type, text_data, f_name, *extra_data):
             log_line = "{} | ERROR in {}: {}: {}".format(ctime, f_name,
                                                          type(text_data), text_data)
         elif e_type == "info":
-            logline = "{} | INFO from {}: {}".format(ctime, f_name, text_data)
+            logline = "\n{} | INFO from {}: {}".format(ctime, f_name, text_data)
 
         if extra_data:
             log_line += "\nADDITIONAL INFO:\n" + str(extra_data) + "\nADDITIONAL INFO END"
