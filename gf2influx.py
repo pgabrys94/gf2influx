@@ -98,7 +98,7 @@ def digester(data, b_id):
     if i == 0:
         threading.Thread(target=send_to_influxdb, args=(batch.copy(), b_id,)).start()
         batch_end = time.time()
-        d_msg = "Batch :{} Processed {} entries in {}s.".format(b_id, len(data), batch_end - batch_start)
+        d_msg = "Batch {}: processed {} entries in {}s.".format(b_id, len(data), batch_end - batch_start)
         logger("info", d_msg, "main")
         batch.clear()
 
