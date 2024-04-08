@@ -10,16 +10,22 @@ from datetime import datetime, timedelta
 from influxdb import InfluxDBClient
 
 
-def logger(error_data, f_name, *extra_data):
+def logger(e_type, text_data, f_name, *extra_data):
+    ctime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(log_file, "a") as log:
-        log_line = "{} | ERROR in {}: {}: {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), f_name,
-                                                     type(error_data), error_data)
+        if e_type == 'error':
+            log_line = "{} | ERROR in {}: {}: {}".format(ctime, f_name,
+                                                         type(text_data), text_data)
+        elif e_type == "info":
+            logline = "{} | INFO from {}: {}".format(ctime, f_name, text_data)
+
         if extra_data:
             log_line += "\nADDITIONAL INFO:\n" + str(extra_data) + "\nADDITIONAL INFO END"
-        log.write(log_line)
+        log.write(logline)
 
 
-def send_to_influxdb(data):
+def send_to_influxdb(data, b_uid):
+    send_start = time.time()
     try:
         inserted = False
         i = 0
@@ -32,13 +38,17 @@ def send_to_influxdb(data):
                 continue
             elif not inserted and i >= 6:
                 raise Exception("Timeout while sending data. Check database availability.")
-
+            else:
+                send_end = time.time()
+                d_msg = "Batch {} inserted in {}s.".format(b_uid, len(data), send_end - send_start)
+                logger("info", d_msg, "main")
 
     except Exception as error:
-        logger(error, "send_to_influxdb")
+        logger("Batch {} sending error".format(b_uid), error, "send_to_influxdb")
 
 
-def digester(data):
+def digester(data, b_id):
+    batch_start = time.time()
     tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
     fields_list = ["sequence_num", "bytes", "packets"]
     tags = {}
@@ -63,7 +73,7 @@ def digester(data):
                           ("<-" if column != 0 else ""))
             additional += "LINE\n", line, "\n"
             additional += "RAW_LINE\n", raw_line, "\n"
-            logger(error, "send_to_influxdb", additional)
+            logger("Batch {} digester error".format(b_id), error, "digester", additional)
             continue
 
         flow_time = (float(line["time_flow_end_ns"]) - float(line["time_flow_start_ns"])) / 1e9
@@ -86,7 +96,10 @@ def digester(data):
         i -= 1
 
     if i == 0:
-        threading.Thread(target=send_to_influxdb, args=(batch.copy(),)).start()
+        threading.Thread(target=send_to_influxdb, args=(batch.copy(), b_id,)).start()
+        batch_end = time.time()
+        d_msg = "Batch :{} Processed {} entries in {}s.".format(b_id, len(data), batch_end - batch_start)
+        logger("info", d_msg, "main")
         batch.clear()
 
 
@@ -97,6 +110,7 @@ args = ['tail', '-fn0', temp_file]
 config = Conson(salt="geoip2grafana")
 config_file = os.path.join(os.getcwd(), "config.json")
 pwd = ""
+batch_id = 0
 
 try:
     if os.path.exists(config_file):
@@ -123,7 +137,7 @@ try:
         input("Press any key to continue...")
         sys.exit()
 except Exception as err:
-    logger(err, "main")
+    logger("error", err, "main")
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
@@ -141,11 +155,15 @@ try:
 
                         now = datetime.now()
                         if datetime.now() - previous_time > timedelta(seconds=5) and len(lines) != 0:
-                            threading.Thread(target=digester, args=(lines.copy(),)).start()
+                            buid = batch_id
+                            threading.Thread(target=digester, args=(lines.copy(), buid,)).start()
+                            msg = "Batch of {} entries started processing".format(len(lines))
+                            logger("info", msg, "main")
                             lines.clear()
                             previous_time = now
+                            batch_id += 1
                         elif len(lines) == 0:
                             break
 
 except Exception as err:
-    logger(err, "main")
+    logger("error", err, "main")
