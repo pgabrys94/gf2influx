@@ -105,7 +105,7 @@ def digester(data, b_id):
 
 temp_file = os.path.normpath("/var/log/netflow.log")
 log_file = os.path.join("/var/log/", "gf2influx.log")
-args = ['tail', '-fn0', "--follow=netflow.log", "--retry", temp_file]
+args = ['tail', '-fn0', "--follow=name", "--retry", temp_file]
 
 config = Conson(salt="geoip2grafana")
 config_file = os.path.join(os.getcwd(), "config.json")
