@@ -156,7 +156,7 @@ try:
                         and len(lines) != 0) or len(lines) >= 300:
                     buid = batch_id
                     threading.Thread(target=digester, args=(lines.copy(), buid,)).start()
-                    msg = "Batch of {} entries started processing".format(len(lines))
+                    msg = "Batch {} of {} entries started processing".format(buid, len(lines))
                     logger("info", msg, "main")
                     lines.clear()
                     previous_time = now
