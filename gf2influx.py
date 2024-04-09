@@ -78,13 +78,13 @@ def digester(data, b_id):
     batch_start = time.time()
     tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
     fields_list = ["sequence_num", "bytes", "packets"]
-    tags = {}
-    fields = {}
     samplers = {}
 
     i = len(data)
     for raw_line in data:   # for every line in passed list, try to interpret it as json data
         line = ""
+        tags = {}
+        fields = {}
         try:
             if raw_line.startswith(b"{") and raw_line.endswith(b"}\n"):     # verify completeness
                 line = json.loads(raw_line)
