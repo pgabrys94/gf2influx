@@ -30,6 +30,8 @@ def logger(e_type, text_data, f_name, *extra_data):
             name = "GoFlow2 InfluxDB"
             sep = "\n" + "#" * len(name) + "\n"
             log_line = f"{sep}{name}{sep}\n{ctime} - Starting integrator...\n\n{text_data}\n\n"
+        elif e_type == "warn":
+            log_line = "\n{} | WARN from {}: {}".format(ctime, f_name, text_data)
 
         if extra_data:
             log_line += "\nADDITIONAL INFO:\n" + str(extra_data) + "\nADDITIONAL INFO END"
@@ -52,6 +54,7 @@ def send_to_influxdb(data, b_uid):
             inserted = insertion
             i += 1
             if not inserted and i < 5:  # 5 failures and raise exception
+                logger("warn", f"Database insertion failure {i}, retrying after 3s...", "send_to_influxdb")
                 time.sleep(3)
                 continue
             elif not inserted and i >= 5:
