@@ -53,7 +53,7 @@ def digester(data, b_id):
     fields_list = ["sequence_num", "bytes", "packets"]
     tags = {}
     fields = {}
-    batch = []
+    samplers = {}
 
     i = len(data)
     for raw_line in data:
@@ -92,15 +92,21 @@ def digester(data, b_id):
             "fields": fields
         }
 
-        batch.append(formatted)
+        if tags["sampler_address"] not in samplers.keys():
+            samplers[tags["sampler_address"]] = []
+
+        samplers[tags["sampler_address"]].append(formatted)
         i -= 1
 
     if i == 0:
-        threading.Thread(target=send_to_influxdb, args=(batch.copy(), b_id,)).start()
         batch_end = time.time()
-        d_msg = "Batch {}: processed {} records in {}s.".format(b_id, len(data), batch_end - batch_start)
-        logger("info", d_msg, "main")
-        batch.clear()
+        for sampler in samplers.keys():
+            threading.Thread(target=send_to_influxdb, args=(samplers[sampler].copy(), b_id,)).start()
+            d_msg = "Batch {}: for sampler {} processed {} records in {}s.".format(b_id, sampler,
+                                                                                   len(data), batch_end - batch_start)
+            logger("info", d_msg, "main")
+
+        samplers.clear()
 
 
 temp_file = os.path.normpath("/var/log/netflow.log")
@@ -152,8 +158,7 @@ try:
                 lines.add(f.stdout.readline())
 
                 now = datetime.now()
-                if (datetime.now() - previous_time > timedelta(seconds=5)
-                        and len(lines) != 0) or len(lines) >= 300:
+                if now - previous_time >= timedelta(seconds=1):
                     buid = batch_id
                     threading.Thread(target=digester, args=(lines.copy(), buid,)).start()
                     msg = "Batch {} of {} records started processing".format(buid, len(lines))
