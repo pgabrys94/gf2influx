@@ -197,7 +197,7 @@ try:
                 lines.add(f.stdout.readline())
 
                 now = datetime.now()
-                # create separate parser for collected data every 1s or 2500 lines (half of line protocol optimum)
+                # create separate parser for collected data every 5s or 2500 lines (half of line protocol optimum)
                 if now - previous_time >= timedelta(seconds=5) or len(lines) >= 2500:
                     batch_uid = batch_id
                     threading.Thread(target=digester, args=(lines.copy(), batch_uid,)).start()
