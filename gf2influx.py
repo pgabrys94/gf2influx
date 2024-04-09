@@ -29,7 +29,7 @@ def logger(e_type, text_data, f_name, *extra_data):
         elif e_type == "init":
             name = "GoFlow2 InfluxDB"
             sep = "\n" + "#" * len(name) + "\n"
-            log_line = f"{sep}{name}{sep}\nq{ctime} - Starting integrator...\n{text_data}\n\n"
+            log_line = f"{sep}{name}{sep}\n{ctime} - Starting integrator...\n{text_data}\n\n"
 
         if extra_data:
             log_line += "\nADDITIONAL INFO:\n" + str(extra_data) + "\nADDITIONAL INFO END"
