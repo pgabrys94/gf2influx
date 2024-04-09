@@ -144,10 +144,10 @@ try:
     with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
         p = select.poll()
         p.register(f.stdout)
-        while True:
-            lines = set()
-            previous_time = datetime.now()
+        lines = set()
+        previous_time = datetime.now()
 
+        while True:
             if p.poll():
                 lines.add(f.stdout.readline())
 
