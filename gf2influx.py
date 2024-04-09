@@ -102,8 +102,8 @@ def digester(data, b_id):
         batch_end = time.time()
         for sampler in samplers.keys():
             threading.Thread(target=send_to_influxdb, args=(samplers[sampler].copy(), b_id,)).start()
-            d_msg = "Batch {}: for sampler {} processed {} records in {}s.".format(b_id, sampler,
-                                                                                   len(data), batch_end - batch_start)
+            d_msg = ("Batch {}: for sampler {} processed {} records in {}s."
+                     .format(b_id, sampler, len(samplers[sampler]), batch_end - batch_start))
             logger("info", d_msg, "main")
 
         samplers.clear()
