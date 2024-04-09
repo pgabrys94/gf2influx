@@ -105,7 +105,7 @@ def digester(data, b_id):
 
 temp_file = os.path.normpath("/var/log/netflow.log")
 log_file = os.path.join("/var/log/", "gf2influx.log")
-args = ['tail', '-fn0', temp_file]
+args = ['tail', '-fn0', "--follow=netflow.log", "--retry", temp_file]
 
 config = Conson(salt="geoip2grafana")
 config_file = os.path.join(os.getcwd(), "config.json")
@@ -141,30 +141,28 @@ except Exception as err:
 
 try:
     db_client = InfluxDBClient(config()["host"], config()["port"], config()["username"], pwd, config()["database"])
-    while True:
-        lines = set()
-        previous_time = datetime.now()
-        with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
-            p = select.poll()
-            p.register(f.stdout)
-            while True:
-                if os.path.exists(temp_file):
+    with subprocess.Popen(args, stdout=subprocess.PIPE) as f:
+        p = select.poll()
+        p.register(f.stdout)
+        while True:
+            lines = set()
+            previous_time = datetime.now()
 
-                    if p.poll():
-                        lines.add(f.stdout.readline())
+            if p.poll():
+                lines.add(f.stdout.readline())
 
-                        now = datetime.now()
-                        if (datetime.now() - previous_time > timedelta(seconds=5)
-                                and len(lines) != 0) or len(lines) >= 300:
-                            buid = batch_id
-                            threading.Thread(target=digester, args=(lines.copy(), buid,)).start()
-                            msg = "Batch of {} entries started processing".format(len(lines))
-                            logger("info", msg, "main")
-                            lines.clear()
-                            previous_time = now
-                            batch_id += 1
-                        elif len(lines) == 0:
-                            break
+                now = datetime.now()
+                if (datetime.now() - previous_time > timedelta(seconds=5)
+                        and len(lines) != 0) or len(lines) >= 300:
+                    buid = batch_id
+                    threading.Thread(target=digester, args=(lines.copy(), buid,)).start()
+                    msg = "Batch of {} entries started processing".format(len(lines))
+                    logger("info", msg, "main")
+                    lines.clear()
+                    previous_time = now
+                    batch_id += 1
+                elif len(lines) == 0:
+                    raise Exception("No new lines in log file. Is collector active?")
 
 except Exception as err:
     logger("error", err, "main")
