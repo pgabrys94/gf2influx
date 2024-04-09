@@ -40,7 +40,7 @@ def send_to_influxdb(data, b_uid):
                 raise Exception("Timeout while sending data. Check database availability.")
             else:
                 send_end = time.time()
-                d_msg = "Batch {} inserted {} records in {}s.".format(b_uid, len(data), send_end - send_start)
+                d_msg = "Batch {} inserted {} records in {:.2f}s.".format(b_uid, len(data), send_end - send_start)
                 logger("info", d_msg, "send_to_influxdb")
 
     except Exception as error:
@@ -102,7 +102,7 @@ def digester(data, b_id):
         batch_end = time.time()
         for sampler in samplers.keys():
             threading.Thread(target=send_to_influxdb, args=(samplers[sampler].copy(), b_id,)).start()
-            d_msg = ("Batch {}: for sampler {} processed {} records in {}s."
+            d_msg = ("Batch {}: for sampler {} processed {} records in {:.2f}s."
                      .format(b_id, sampler, len(samplers[sampler]), batch_end - batch_start))
             logger("info", d_msg, "digester")
 
