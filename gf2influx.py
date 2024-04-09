@@ -98,7 +98,7 @@ def digester(data, b_id):
     if i == 0:
         threading.Thread(target=send_to_influxdb, args=(batch.copy(), b_id,)).start()
         batch_end = time.time()
-        d_msg = "Batch {}: processed {} entries in {}s.".format(b_id, len(data), batch_end - batch_start)
+        d_msg = "Batch {}: processed {} records in {}s.".format(b_id, len(data), batch_end - batch_start)
         logger("info", d_msg, "main")
         batch.clear()
 
@@ -156,7 +156,7 @@ try:
                         and len(lines) != 0) or len(lines) >= 300:
                     buid = batch_id
                     threading.Thread(target=digester, args=(lines.copy(), buid,)).start()
-                    msg = "Batch {} of {} entries started processing".format(buid, len(lines))
+                    msg = "Batch {} of {} records started processing".format(buid, len(lines))
                     logger("info", msg, "main")
                     lines.clear()
                     previous_time = now
