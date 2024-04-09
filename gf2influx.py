@@ -76,8 +76,8 @@ def digester(data, b_id):
     :return:
     """
     batch_start = time.time()
-    tags_list = ["proto", "in_if", "out_if", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
-    fields_list = ["sequence_num", "bytes", "packets"]
+    tags_list = ["proto", "sampler_address", "src_addr", "dst_addr", "src_port", "dst_port"]
+    fields_list = ["sequence_num", "bytes", "packets", "in_if", "out_if"]
     samplers = {}
 
     i = len(data)
