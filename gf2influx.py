@@ -29,7 +29,7 @@ def logger(e_type, text_data, f_name, *extra_data):
         elif e_type == "init":
             name = "GoFlow2 InfluxDB"
             sep = "#" * len(name) + "\n"
-            log_line = f"{sep}{name}{sep}{ctime} - Starting integrator...\n"
+            log_line = f"{sep}{name}{sep}{ctime} - Starting integrator...\n{text_data}"
 
         if extra_data:
             log_line += "\nADDITIONAL INFO:\n" + str(extra_data) + "\nADDITIONAL INFO END"
@@ -149,6 +149,7 @@ pwd = ""
 batch_id = 0
 
 # Main function #
+logger("init", f"Polling: {temp_file}\nLogging to: {log_file}", "main")
 try:
     # Config operations:
     if os.path.exists(config_file):     # If configuration file exists:
