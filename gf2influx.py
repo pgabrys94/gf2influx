@@ -81,7 +81,7 @@ def digester(data, b_id):
     samplers = {}
 
     i = len(data)
-    for raw_line in data:   # for every line in passed list, try to interpret it as json data
+    for raw_line in data:   # for every line in passed list, try interpreting it as json data
         line = ""
         tags = {}
         fields = {}
